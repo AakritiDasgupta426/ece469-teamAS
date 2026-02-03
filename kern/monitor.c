@@ -25,7 +25,7 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
-	{ "hidden", "Run hidden test cases", exec_hidden_cases},
+	//{ "hidden", "Run hidden test cases", exec_hidden_cases},
 	{ "backtrace", "Show the backtrace of the current kernel stack", mon_backtrace},
 };
 
