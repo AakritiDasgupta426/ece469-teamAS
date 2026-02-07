@@ -10,10 +10,15 @@
 #include <kern/console.h>
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
-
+#include <kern/hidden.h>
 #define CMDBUF_SIZE	80	// enough for one VGA text line
 
-
+static int
+mon_hidden(int argc, char **argv, struct Trapframe* tf)
+{
+	hidden_test_cases();
+	return 0;
+}
 struct Command {
 	const char *name;
 	const char *desc;
@@ -25,7 +30,7 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
-	//{ "hidden", "Run hidden test cases", exec_hidden_cases},
+	{ "hidden", "Run hidden test cases", mon_hidden},
 	{ "backtrace", "Show the backtrace of the current kernel stack", mon_backtrace},
 };
 
@@ -85,7 +90,6 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 	}
 	return 0;
 }
-
 
 
 /***** Kernel monitor command interpreter *****/
