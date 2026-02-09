@@ -1,5 +1,32 @@
-a.
-b.
-c.
-d.
-e.
+a.  +-----+----------------------+---------------------------------------+
+    |Entry| Base Virtual Address |  Points to (logically)                |
+    +=====+======================+=======================================+
+    |1023 | ?                    | Page table for top 4MB of phys memory |
+    +-----+----------------------+---------------------------------------+
+    |1022 | ?                    | ?                                     |
+    +-----+----------------------+---------------------------------------+
+    |.    | ?                    | ?                                     |
+    +-----+----------------------+---------------------------------------+
+    |.    | ?                    | ?                                     |
+    +-----+----------------------+---------------------------------------+
+    |.    | ?                    | ?                                     |
+    +-----+----------------------+---------------------------------------+
+    |2    | 0x00800000           | ?                                     |
+    +-----+----------------------+---------------------------------------+
+    |1    | 0x00400000           | ?                                     |
+    +-----+----------------------+---------------------------------------+
+    |0    | 0x00000000           | [see next question]                   |
+    +-----+----------------------+---------------------------------------+
+
+b. User program will not be able to read or write to the kernel's memory because it is protected via the PTE_U flag.
+Pages without the PTE_U flag can only be accessed when in kernal mode or a page fault is triggered to prevent access.
+
+c. The maximum amount of physical memory that this operating system can support is 4GB. 
+This is because there are 1024 page directory entries per page directory and 1024 page 
+table entries per page table and 4096 bytes mapped by a page so 1024 x 1024 x 4096 = 4GB.
+
+d. 
+
+e. We transition to running at an EIP above KERNBASE when the code runs jmp *%eax where %eax is the address of relocated which is linked at a high virtual address.
+Identity mapping makes it possible for us to continue executing at a low EIP between when we enable paging and when we begin running at an EIP above KERNBASE. 
+This transition is necessary because the kernel is linked to run at KERNBASE and all kernal addresses assume that high virtual address space.
