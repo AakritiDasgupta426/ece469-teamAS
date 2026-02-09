@@ -27,6 +27,5 @@ table entries per page table and 4096 bytes mapped by a page so 1024 x 1024 x 40
 
 d. 
 
-e. We transition to running at an EIP above KERNBASE when the code runs jmp *%eax where %eax is the address of relocated which is linked at a high virtual address.
-Identity mapping makes it possible for us to continue executing at a low EIP between when we enable paging and when we begin running at an EIP above KERNBASE. 
-This transition is necessary because the kernel is linked to run at KERNBASE and all kernal addresses assume that high virtual address space.
+e. We transition to running at an EIP above KERNBASE when the code runs jmp *%eax where %eax is the address of relocated which is linked at a higher virtual address.
+This transition is necessary because the kernel is linked to run at KERNBASE and all kernal addresses assume that higher virtual address space.
