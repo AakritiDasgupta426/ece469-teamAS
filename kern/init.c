@@ -8,7 +8,7 @@
 #include <kern/console.h>
 #include <kern/pmap.h>
 #include <kern/kclock.h>
-
+#include <kern/env.h>
 
 void
 i386_init(void)
@@ -28,7 +28,12 @@ i386_init(void)
 
 	// Lab 2 memory management initialization functions
 	mem_init();
+	env_init();
 
+	extern uint8_t _binary_obj_user_hello_start[];
+	env_create(_binary_obj_user_hello_start, ENV_TYPE_USER);
+	env_run(&envs[0]);
+	
 	// Drop into the kernel monitor.
 	while (1)
 		monitor(NULL);

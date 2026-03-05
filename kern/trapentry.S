@@ -57,5 +57,46 @@
 /*
  * Lab 3: Your code here for _alltraps
  */
+TRAPHANDLER_NOEC(t_divide, T_DIVIDE)
+TRAPHANDLER_NOEC(t_debug,  T_DEBUG)
+TRAPHANDLER_NOEC(t_nmi,    T_NMI)
+TRAPHANDLER_NOEC(t_brkpt,  T_BRKPT)
+TRAPHANDLER_NOEC(t_oflow,  T_OFLOW)
+TRAPHANDLER_NOEC(t_bound,  T_BOUND)
+TRAPHANDLER_NOEC(t_illop,  T_ILLOP)
+TRAPHANDLER_NOEC(t_device, T_DEVICE)
+TRAPHANDLER(t_dblflt, T_DBLFLT)
+TRAPHANDLER(t_tss,    T_TSS)
+TRAPHANDLER(t_segnp,  T_SEGNP)
+TRAPHANDLER(t_stack,  T_STACK)
+TRAPHANDLER(t_gpflt,  T_GPFLT)
+TRAPHANDLER(t_pgflt,  T_PGFLT)
+TRAPHANDLER_NOEC(t_fperr, T_FPERR)
+TRAPHANDLER_NOEC(t_align, T_ALIGN)
+TRAPHANDLER_NOEC(t_mchk,  T_MCHK)
+TRAPHANDLER_NOEC(t_simderr, T_SIMDERR)
 
+.globl _alltraps
+_alltraps:
+    # 1. Push values to fill in the rest of struct Trapframe
+    # The CPU already pushed SS, ESP, EFLAGS, CS, EIP, and maybe an error code.
+    # The TRAPHANDLER macro pushed the Trap Number.
+    # Now we push the segment registers and the general purpose registers.
+    pushl %ds
+    pushl %es
+    pushal
 
+    # 2. Load the Kernel Data Segment descriptor into %ds and %es
+    # This ensures the kernel can access its own data.
+    movl $GD_KD, %eax
+    movw %ax, %ds
+    movw %ax, %es
+
+    # 3. Push %esp as an argument to the trap() function.
+    # In C, 'void trap(struct Trapframe *tf)' takes a pointer. 
+    # Since the stack pointer IS pointing at the Trapframe we just built, 
+    # we push %esp.
+    pushl %esp
+
+    # 4. Call the C function
+    call trap

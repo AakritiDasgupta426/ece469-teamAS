@@ -8,6 +8,8 @@
 
 #include <kern/pmap.h>
 #include <kern/kclock.h>
+#include <inc/env.h>
+#include <kern/env.h>
 
 #include <kern/hidden.h>
 
@@ -20,7 +22,7 @@ pde_t *kern_pgdir;		// Kernel's initial page directory
 struct PageInfo *pages;		// Physical page state array
 static struct PageInfo *page_free_list;	// Free list of physical pages
 
-
+extern struct Env *envs;
 // --------------------------------------------------------------
 // Detect machine's physical memory setup.
 // --------------------------------------------------------------
@@ -138,8 +140,7 @@ mem_init(void)
 	// create initial page directory.
 	kern_pgdir = (pde_t *) boot_alloc(PGSIZE);
 	//cprintf("mem_init: after kern_pgdrig alloc\n");
-	memset(kern_pgdir, 0, PGSIZE);
-	
+	memset(kern_pgdir, 0, PGSIZE);	
 
 	//////////////////////////////////////////////////////////////////////
 	// Recursively insert PD in itself as a page table, to form
@@ -161,7 +162,8 @@ mem_init(void)
 	pages = (struct PageInfo *) boot_alloc(npages * sizeof(struct PageInfo));
 	//cprintf("mem_init: after pages[] alloc\n");
 	memset(pages, 0, npages * sizeof(struct PageInfo));
-
+	//envs = (struct Env *) boot_alloc(NENV * sizeof(struct Env));
+	//memset(envs, 0, NENV * sizeof(struct Env));
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
 	// up the list of free physical pages. Once we've done so, all further
@@ -187,7 +189,11 @@ mem_init(void)
 	//      (ie. perm = PTE_U | PTE_P)
 	//    - pages itself -- kernel RW, user NONE
 	// Your code goes here:
-	boot_map_region(kern_pgdir, UPAGES, npages * sizeof(struct PageInfo), PADDR(pages), PTE_U);
+	size_t pages_size = ROUNDUP(npages * sizeof(struct PageInfo), PGSIZE);
+	boot_map_region(kern_pgdir, UPAGES, pages_size , PADDR(pages), PTE_U );
+	size_t envs_size = ROUNDUP(NENV * sizeof(struct Env), PGSIZE);
+	//boot_map_region(kern_pgdir, UENVS, envs_size, PADDR(envs), PTE_U );
+
 	//////////////////////////////////////////////////////////////////////
 	// Use the physical memory that 'bootstack' refers to as the kernel
 	// stack.  The kernel stack grows down from virtual address KSTACKTOP.
@@ -407,7 +413,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 		}
 
 		newpage->pp_ref = 1;
-		*pgdirentry = page2pa(newpage) |PTE_P|PTE_W |PTE_U;
+		*pgdirentry = page2pa(newpage) |PTE_P|PTE_W | PTE_U;
 	}
 	pgtable = (pte_t *)KADDR(PTE_ADDR(*pgdirentry));
 	return &pgtable[PTX(va)];
