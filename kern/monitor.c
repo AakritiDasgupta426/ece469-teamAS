@@ -10,12 +10,8 @@
 #include <kern/console.h>
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
-<<<<<<< HEAD
 #include <kern/trap.h>
 
-=======
-#include <kern/hidden.h>
->>>>>>> lab2
 #define CMDBUF_SIZE	80	// enough for one VGA text line
 
 static int
@@ -35,11 +31,8 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
-<<<<<<< HEAD
-=======
 	{ "hidden", "Run hidden test cases", mon_hidden},
 	{ "backtrace", "Show the backtrace of the current kernel stack", mon_backtrace},
->>>>>>> lab2
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -99,10 +92,6 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 	return 0;
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> lab2
 
 /***** Kernel monitor command interpreter *****/
 
