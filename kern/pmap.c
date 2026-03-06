@@ -606,7 +606,36 @@ int
 user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 {
 	// LAB 3: Your code here.
+	//convert strat va to in
+	uintptr_t start = (uintptr_t) va;
+	//figure out end of address to check
+	uintptr_t end = start + len;
+	uintptr_t address;
+	pte_t *pte;
 
+	perm = perm | PTE_P;
+
+	//check every page that overlaps in range [va, va+len)
+	for (address = ROUNDDOWN(start, PGSIZE); address < end; address += PGSIZE)
+	{
+		//find page table entry for va
+		pte = pgdir_walk(env->env_pgdir, (void *) address, 0);
+
+		//error if address ourside user space or pte does not exist
+		if (address > ULIM || pte == NULL || ((*pte & perm) != perm))
+		{
+			//first bad address that casued failure
+			if (address < start)
+			{
+				user_mem_check_addr = start;
+			}
+			else
+			{
+				user_mem_check_addr = address;
+			}
+			return -E_FAULT;
+		}
+	}
 	return 0;
 }
 
