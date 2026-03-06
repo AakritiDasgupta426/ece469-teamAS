@@ -8,8 +8,11 @@
 #include <kern/console.h>
 #include <kern/pmap.h>
 #include <kern/kclock.h>
+<<<<<<< HEAD
 #include <kern/env.h>
 #include <kern/trap.h>
+=======
+>>>>>>> lab2
 
 
 void

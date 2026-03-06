@@ -1,0 +1,33 @@
+a.  +-----+----------------------+---------------------------------------+
+    |Entry| Base Virtual Address |  Points to (logically)                |
+    +=====+======================+=======================================+
+    |1023 | 0xFFC00000           | Page table for top 4MB of phys memory |
+    +-----+----------------------+---------------------------------------+
+    |1022 | 0xFF800000           | Page table for phys memory [248, 252) |
+    +-----+----------------------+---------------------------------------+
+    |.    | 1021-961             | Page table for phys memory            |
+    +-----+----------------------+---------------------------------------+
+    |.    | 1021-961             | Page table for phys memory            |
+    +-----+----------------------+---------------------------------------+
+    |960  | 0xF0000000           | Page table for phys memory [0, 4)     |
+    +-----+----------------------+---------------------------------------+
+    |2    | 0x00800000           | Not mapped                            |
+    +-----+----------------------+---------------------------------------+
+    |1    | 0x00400000           | not mapped                            |
+    +-----+----------------------+---------------------------------------+
+    |0    | 0x00000000           | identity mapping of first 4mb         |
+    +-----+----------------------+---------------------------------------+
+
+b. User program will not be able to read or write to the kernel's memory because it is protected via the PTE_U flag.
+Pages without the PTE_U flag can only be accessed when in kernal mode or a page fault is triggered to prevent access.
+
+c. The maximum amount of physical memory that this operating system can support is 4GB. 
+This is because there are 1024 page directory entries per page directory and 1024 page 
+table entries per page table and 4096 bytes mapped by a page so 1024 x 1024 x 4096 = 4GB.
+
+d. With max of 256MB physical memory, the memory management overhead is 772KB. The page info array is 512 KB, 
+Page tables is 256 KB, and Page directory is 4KB. Page Directory = 4KB , Page Tables -> 256/4 = 64 and 64 x 4KB = 256 KB. 
+Page Info Array -> 256/4 = 65,536 pages , 65,536 x 8 = 524,288 bytes or 512 KB. Together 512+256+4 = 772.
+
+e. We transition to running at an EIP above KERNBASE when the code runs jmp *%eax where %eax is the address of relocated which is linked at a higher virtual address.
+This transition is necessary because the kernel is linked to run at KERNBASE and all kernal addresses assume that higher virtual address space.
