@@ -1,3 +1,3 @@
 Exercise 4
-1.
-2.
+1. The purpose of having an individual handler function for each exception is to allow the kernel to identify which trap occured and ensure that the trap information is pushed onto the stack in a format. By using seperate handlers, the system can push the trap number and add a dummy error code when necessary so that all traps have the same stack layout before transferring control to _alltraps routine. Allowing the kernel to handle different exceptions in a uniform way. 
+2. No extra code was needed tyo make user/softint behave correctly because IDT entries are already configured with the right privelege levels. When the user program executes int $14 it attempts to invoke the page fault handler. Since, page fault handler already has privelege level 0, it can only be called from kernel mode. The instruction is from user mode, so the processor has a General Protection Fault, which is trap 13. 
