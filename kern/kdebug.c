@@ -142,6 +142,10 @@ debuginfo_eip(uintptr_t addr, struct Eipdebuginfo *info)
 		// Make sure this memory is valid.
 		// Return -1 if it is not.  Hint: Call user_mem_check.
 		// LAB 3: Your code here.
+		if (user_mem_check(curenv, usd, sizeof(struct UserStabData), PTE_U) == -1)
+		{
+			return -1;
+		}
 
 		stabs = usd->stabs;
 		stab_end = usd->stab_end;
@@ -150,6 +154,14 @@ debuginfo_eip(uintptr_t addr, struct Eipdebuginfo *info)
 
 		// Make sure the STABS and string table memory is valid.
 		// LAB 3: Your code here.
+		if (user_mem_check(curenv, stabs, (stab_end - stabs) * sizeof(struct Stab), PTE_U) != 0)
+		{
+			return -1;
+		}
+		if (user_mem_check(curenv, stabstr, stabstr_end - stabstr, PTE_U) != 0)
+		{
+			return -1;
+		}
 	}
 
 	// String table validity checks
@@ -177,8 +189,17 @@ debuginfo_eip(uintptr_t addr, struct Eipdebuginfo *info)
 	if (lfun <= rfun) {
 		// stabs[lfun] points to the function name
 		// in the string table, but check bounds just in case.
-		if (stabs[lfun].n_strx < stabstr_end - stabstr)
-			info->eip_fn_name = stabstr + stabs[lfun].n_strx;
+		while (lfun >= lfile) {
+			if (stabs[lfun].n_type == N_FUN && stabs[lfun].n_strx != 0)
+				break;
+			lfun--;
+		}
+		
+		if (lfun < lfile)
+			return -1;
+
+
+		info->eip_fn_name = stabstr + stabs[lfun].n_strx;
 		info->eip_fn_addr = stabs[lfun].n_value;
 		addr -= info->eip_fn_addr;
 		// Search within the function definition for the line number.
@@ -205,7 +226,10 @@ debuginfo_eip(uintptr_t addr, struct Eipdebuginfo *info)
 	//	Look at the STABS documentation and <inc/stab.h> to find
 	//	which one.
 	// Your code here.
-
+	stab_binsearch(stabs, &lline, &rline, N_SLINE, addr);
+	if (lline <= rline) {
+		info->eip_line = stabs[lline].n_desc;
+	}
 
 	// Search backwards from the line number for the relevant filename
 	// stab.
