@@ -330,35 +330,36 @@ page_init(void)
 	page_free_list = NULL;
 	for (i = 0; i < npages; i++) {
 		physaddr_t pa = i * PGSIZE;
-		
 		if (i == 0) {
 			pages[i].pp_ref = 1;
-			pages[i].pp_link = NULL;
-			continue;
+		}
+		else if (i == PGNUM(MPENTRY_PADDR)) {
+			pages[i].pp_ref = 1;
+		}
+		else if (i < npages_basemem) {
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+			//continue;
+		}
+		else if (pa >= IOPHYSMEM && pa < EXTPHYSMEM) {
+			pages[i].pp_ref = 1;
 		}
 
-		if (i == PGNUM(MPENTRY_PADDR))
-		{
+		else if (pa >= EXTPHYSMEM && pa < first_free_pa) {
 			pages[i].pp_ref = 1;
-			pages[i].pp_link = NULL;
-			continue;
 		}
 
-		if (pa >= IOPHYSMEM && pa < EXTPHYSMEM){
-			pages[i].pp_ref = 1;
-			pages[i].pp_link = NULL;
-			continue;
+        // 5b. Free extended memory
+		else {
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+			//continue;
 		}
-
-		if (pa >= EXTPHYSMEM && pa < first_free_pa) {
-			pages[i].pp_ref = 1;
-			pages[i].pp_link = NULL;
-			continue;
-		}
-		pages[i].pp_ref = 0;
-		pages[i].pp_link = page_free_list;
-		page_free_list = &pages[i];
+		//pages[i].pp_link = NULL;
 	}
+
 }
 
 //
@@ -384,7 +385,7 @@ page_alloc(int alloc_flags)
 	page_free_list = pp->pp_link;
 	pp->pp_link = NULL;
 
-	if (alloc_flags && ALLOC_ZERO)
+	if (alloc_flags & ALLOC_ZERO)
 		memset(page2kva(pp), 0, PGSIZE); 
 	return pp;
 }
@@ -656,17 +657,17 @@ mmio_map_region(physaddr_t pa, size_t size)
 	//
 	// Your code here:
 	//static uintptr_t base = MMIOBASE;
-	uintptr_t start;
+	//uintptr_t start;
 	size_t sz;
 
 	sz = ROUNDUP(size, PGSIZE);
-	start = base;
+	//start = base;
 
 	if (base + sz > MMIOLIM)
 		panic("mmio_map_region overflow");
 
-	boot_map_region(kern_pgdir, start, sz, pa, PTE_W | PTE_PCD | PTE_PWT);
-	
+	boot_map_region(kern_pgdir, base, sz, pa, PTE_W | PTE_PCD | PTE_PWT);
+	uintptr_t start = base;
 	base += sz;
 	return (void *) start;
 	//panic("mmio_map_region not implemented");
@@ -712,7 +713,7 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 		pte = pgdir_walk(env->env_pgdir, (void *) address, 0);
 
 		//error if address ourside user space or pte does not exist
-		if (address > ULIM || pte == NULL || ((*pte & perm) != perm))
+		if (address >= ULIM || pte == NULL || ((*pte & perm) != perm))
 		{
 			//first bad address that casued failure
 			if (address < start)
