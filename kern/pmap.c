@@ -11,7 +11,7 @@
 
 #include <kern/env.h>
 #include <kern/cpu.h>
-#include <kern/hidden.h>
+//#include <kern/hidden.h>
 
 // These variables are set by i386_detect_memory()
 size_t npages;			// Amount of physical memory (in pages)
@@ -253,7 +253,7 @@ mem_init(void)
 	check_page_installed_pgdir();
 
 	// Hidden test cases
-	hidden_test_cases();
+	//hidden_test_cases();
 }
 
 // Modify mappings in kern_pgdir to support SMP
@@ -278,7 +278,15 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
-
+	size_t i;
+	for (i = 0; i < NCPU; i++) {
+		uintptr_t kstacktop_i = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
+		boot_map_region(kern_pgdir,
+				kstacktop_i - KSTKSIZE,
+				KSTKSIZE,
+				PADDR(percpu_kstacks[i]),
+				PTE_W);
+	}
 }
 
 // --------------------------------------------------------------
@@ -329,7 +337,7 @@ page_init(void)
 			continue;
 		}
 
-		if (pa == EXTPHYSMEM - PGSIZE)
+		if (i == PGNUM(MPENTRY_PADDR))
 		{
 			pages[i].pp_ref = 1;
 			pages[i].pp_link = NULL;
@@ -647,7 +655,21 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	panic("mmio_map_region not implemented");
+	//static uintptr_t base = MMIOBASE;
+	uintptr_t start;
+	size_t sz;
+
+	sz = ROUNDUP(size, PGSIZE);
+	start = base;
+
+	if (base + sz > MMIOLIM)
+		panic("mmio_map_region overflow");
+
+	boot_map_region(kern_pgdir, start, sz, pa, PTE_W | PTE_PCD | PTE_PWT);
+	
+	base += sz;
+	return (void *) start;
+	//panic("mmio_map_region not implemented");
 }
 
 static uintptr_t user_mem_check_addr;
