@@ -661,13 +661,13 @@ mmio_map_region(physaddr_t pa, size_t size)
 	size_t sz;
 
 	sz = ROUNDUP(size, PGSIZE);
-	//start = base;
+	uintptr_t start = base;
 
 	if (base + sz > MMIOLIM)
 		panic("mmio_map_region overflow");
 
-	boot_map_region(kern_pgdir, base, sz, pa, PTE_W | PTE_PCD | PTE_PWT);
-	uintptr_t start = base;
+	boot_map_region(kern_pgdir, start, sz,ROUNDDOWN(pa, PGSIZE), PTE_W | PTE_PCD | PTE_PWT);
+	//uintptr_t start = base;
 	base += sz;
 	return (void *) start;
 	//panic("mmio_map_region not implemented");

@@ -17,7 +17,7 @@
 static int
 mon_hidden(int argc, char **argv, struct Trapframe* tf)
 {
-	hidden_test_cases();
+//	hidden_test_cases();
 	return 0;
 }
 struct Command {
