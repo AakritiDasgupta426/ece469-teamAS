@@ -1,8 +1,8 @@
 Exercise 2
-1. 
+1. The purpose of hte macro MPBOOTHYS is to use the AP bootstrap to translate the high kernel virtual adresses to the correct low physical addresses. kern/mpentry.S is linked above KERNBASE but carried out at the physical address 0x7000 so the translation is required. Without this it would fail to boot due to the incorrect addresses. boot/boot.S doesn't need this because it's linked and carried out at the same low physica address. 
 
 Exercise 5
-1. 
+1. We still need the seperate kernel stacks for each CPU to prevent the stack corruption when more than one CPU enters the kernel. A scenario would be CPU 0 executing in the kernel using the stakc and CPU 1 may get an interrupt and also enter the kernel. Should they be sharing the stack, CPU 1 could oberwrite CPU 0's stack frames which would corrupt the addresses and cause crashes. There would be issues even with the protection of the big kernel lock because it doesn't prevent multiple CPUs from being in the kernel whoch is why seperate stacks are required. 
 
 Exercise 6
 1. The pointer e can be dereferenced both before and after the addressing switch because kernal memory has the 
