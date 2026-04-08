@@ -1,0 +1,14 @@
+Exercise 2
+1. 
+
+Exercise 5
+1. 
+
+Exercise 6
+1. The pointer e can be dereferenced both before and after the addressing switch because kernal memory has the 
+same mapping in every environment. In env_setup_vm() we copy kern_pgdir, so all kernal addresses don't change 
+across address spaces.
+
+2. Whenever the kernal switches from one environment to another, it must ensure that the old registers are saved
+so the environment can resume exactly where it left off instead of restarting. This happens in trap() when we copy
+into env_tf, and then gets restored in env_pop_tf() during env_run().
